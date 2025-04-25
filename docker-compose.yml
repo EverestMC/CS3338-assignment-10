@@ -1,37 +1,42 @@
+#Docker Compose version being used
+version: '3'
 services:
   # Backend Service
   backend:
-    # Connect your build to the FOLDER location of your backend Dockerfile
-
     
-    # Connect an open localhost port to your exposed frontend port
-
-    # Connect two volumes for backend
-    # The first one maps your local backend to the working directory
-    #     - Hint: {relative backend location}:{working directory listed in your Dockerfile}
-    # Second volume needed, is creating a volume to save the node_module folder created
-    #     - Hint: {volume name}:{working directory}/node_modules
-    #     - Hint: You can name your volume anything, it will auto create when building
-
-    # Leave this, this helps node.js know that there is something running in production
+    #Builds the image from the Dockerfile located in the backend folder
+    build: ./backend
+    
+    #Name of the Docker image, used for pushing and pulling on Docker Hub
+    image: everestmc/backend 
+    
+    #Maps port 3001 in the container to port 3001 on my local machine
+    ports: 
+      - "3001:3001"
+    
+    #Organize volumes by:
+    volumes:
+      - ./backend:/app #Sync local backend folder with the containers directory in /app
+      - backend_node_modules:/app/node_modules #Preserve node_module in a named volume so it isnt overwritten by accident
+    
+    #Leave this, this helps node.js know that there is something running in production
     environment:
       - NODE_ENV=production
     
-    # Connect your backend to the network name created below
-
+    #Connect your backend to the network name created below
+    networks:
+      - app-network
   # Frontend Service
+  #The comments above basically apply directly to everything happending in the front end
   frontend:
-    # Connect your build to the FOLDER location of your frontend Dockerfile
-
-    # Connect an open localhost port to your exposed frontend port
-
-    # Connect two volumes for frontend
-    # The first one maps your local frontend to the working directory
-    #     - Hint: {relative frontend location}:{working directory listed in your Dockerfile}
-    # Second volume needed, is creating a volume to save the node_module folder created
-    #     - Hint: {volume name}:{working directory}/node_modules
-    #     - Hint: You can name your volume anything, it will auto create when building
-
+    
+    build: ./frontend
+    image: everestmc/frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
     # Leave this, this helps node.js know that there is something running in production
     environment:
       - NODE_ENV=development
@@ -40,10 +45,13 @@ services:
     depends_on:
       - backend
     # Connect your frontend to the network name created below
+    networks:
+      - app-network
 
+#Defines persistent volumes used above to store folders
 volumes:
-  # list the names of the two volumes you created to hold the node_modules
-  #     - Hint: the format looks like: {volume name}:
+  backend_node_modules:
+  frontend_node_modules:
 
 networks:
   app-network:
